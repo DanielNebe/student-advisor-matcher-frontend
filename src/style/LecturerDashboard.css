@@ -1,0 +1,7 @@
+.ld-page { padding:24px; display:flex; justify-content:center; }
+.ld-card { width:100%; max-width:900px; background:#fff; padding:20px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+.ld-sub { color:#666; margin-bottom:12px; }
+.ld-list { list-style:none; padding:0; margin:0; }
+.ld-list li { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f3f3f3; }
+.ld-meta { color:#555; font-size:13px; }
+.ld-right { color:#666; font-size:13px; }

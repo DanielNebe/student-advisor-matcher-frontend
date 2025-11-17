@@ -1,0 +1,18 @@
+.sp-page { padding: 24px; display:flex; justify-content:center; }
+.sp-card { width:100%; max-width:800px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+.sp-sub { color:#666; margin-bottom:12px; }
+.sp-msg { padding:10px; border-radius:6px; margin-bottom:12px; }
+.sp-msg.success { background:#e6ffed; color:#0b6623; }
+.sp-msg.error { background:#ffe6e6; color:#8a1212; }
+.sp-msg.info { background:#eef6ff; color:#0b4c8c; }
+.sp-form { display:flex; flex-direction:column; gap:16px; }
+.sp-section { display:flex; flex-direction:column; gap:8px; }
+.sp-label { font-weight:600; }
+.sp-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.sp-chip { padding:8px 12px; border-radius:999px; border:1px solid #ddd; background:#fafafa; cursor:pointer; }
+.sp-chip.selected { background:#dcefff; border-color:#8ab6ff; color:#084d9a; }
+.sp-help { color:#777; font-size:12px; margin-top:6px; }
+.sp-input { padding:10px; border:1px solid #ddd; border-radius:8px; outline:none; }
+.sp-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+.btn-primary { background:#2563eb; color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; }
+.btn-light { background:#f3f4f6; color:#111827; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; }
