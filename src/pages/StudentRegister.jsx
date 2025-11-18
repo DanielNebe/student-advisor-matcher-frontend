@@ -43,7 +43,7 @@ const StudentRegister = ({ onLogin }) => {
         role: "student"
       });
       
-      // Use CORS anywhere proxy
+      // Use CORS anywhere proxy - FIXED URL
       const proxyUrl = "https://cors-anywhere.herokuapp.com/";
       const targetUrl = "https://student-advisor-matcher-bckend-production.up.railway.app/api/auth/register";
       
