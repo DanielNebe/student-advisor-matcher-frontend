@@ -1,7 +1,11 @@
-// src/pages/LecturerRegister.jsx - UPDATED
+// src/pages/LecturerRegister.jsx 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+
+const API = axios.create({ 
+  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+});
 
 const LecturerRegister = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -37,13 +41,21 @@ const LecturerRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
+      console.log("Sending registration request...", {
+        name: form.name,
+        identifier: form.staffNumber,
+        password: "***",
+        role: "advisor"
+      });
+
+      const response = await API.post("/api/auth/register", {
         name: form.name,
         identifier: form.staffNumber,
         password: form.password,
         role: "advisor"
-        // Department removed from registration
       });
+
+      console.log("Registration response:", response.data);
 
       if (response.data.token) {
         const { user, token } = response.data;
@@ -55,10 +67,15 @@ const LecturerRegister = ({ onLogin }) => {
           localStorage.setItem("user", JSON.stringify(user));
         }
         
-        navigate("/lecturer-profile"); // Go to profile completion
+        navigate("/lecturer-profile");
       }
     } catch (error) {
-      setErrors({ submit: error.response?.data?.message || "Registration failed" });
+      console.error("Registration error:", error);
+      setErrors({ 
+        submit: error.response?.data?.message || 
+                error.message || 
+                "Registration failed" 
+      });
     } finally {
       setLoading(false);
     }
