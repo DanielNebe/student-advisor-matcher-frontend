@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API = axios.create({ 
+  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+});
+
 const StudentRegister = ({ onLogin }) => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -36,7 +40,7 @@ const StudentRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
+      const response = await API.post("/api/auth/register", {
         name: form.name,
         identifier: form.registrationNumber,
         password: form.password,
