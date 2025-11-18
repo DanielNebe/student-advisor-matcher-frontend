@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const API = axios.create({ 
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000"
+  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
 });
 
 export default function MatchPage() {
