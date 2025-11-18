@@ -1,5 +1,6 @@
+// src/pages/StudentDashboard.jsx - FIXED
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../config/api"; // Import the centralized API
 
 const StudentDashboard = ({ user }) => {
   const [studentProfile, setStudentProfile] = useState(null);
@@ -11,13 +12,13 @@ const StudentDashboard = ({ user }) => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/api/match/student/profile", {
+        const response = await API.get("/api/match/student/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStudentProfile(response.data);
       } catch (err) {
         console.error("Error fetching profile:", err);
-        setError("Failed to fetch student profile");
+        setError("Failed to fetch student profile: " + (err.response?.data?.message || err.message));
       } finally {
         setLoading(false);
       }
@@ -30,8 +31,8 @@ const StudentDashboard = ({ user }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "http://localhost:5000/api/match/find-match",
+      const response = await API.post(
+        "/api/match/find-match",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -44,8 +45,22 @@ const StudentDashboard = ({ user }) => {
     }
   };
 
-  if (loading) return <p className="p-4">Loading...</p>;
-  if (error) return <p className="p-4 text-red-600">{error}</p>;
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded">
+        {error}
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -66,7 +81,11 @@ const StudentDashboard = ({ user }) => {
             </div>
 
             {!studentProfile.hasMatched && (
-              <button onClick={handleMatch} className="mt-6 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-all">
+              <button 
+                onClick={handleMatch} 
+                disabled={loading}
+                className="mt-6 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-all disabled:opacity-50"
+              >
                 {loading ? "Finding Match..." : "Find Advisor Match"}
               </button>
             )}
