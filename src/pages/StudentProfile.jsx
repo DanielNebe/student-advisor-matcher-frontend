@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const API = axios.create({ 
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000"
+  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
 });
 
 export default function StudentProfile() {
