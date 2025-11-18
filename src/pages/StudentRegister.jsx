@@ -35,7 +35,7 @@ const StudentRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
-      console.log("🚀 Testing with direct fetch...");
+      console.log("🚀 Using proxy to avoid CORS...");
       console.log("📝 Sending data:", {
         name: form.name,
         identifier: form.registrationNumber,
@@ -43,8 +43,8 @@ const StudentRegister = ({ onLogin }) => {
         role: "student"
       });
       
-    // Test with simple fetch instead of axios
-      const response = await fetch("https://student-advisor-matcher-bckend-production.up.railway.app/api/auth/register", {
+      // Use the proxy route instead of direct backend call
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,17 +57,16 @@ const StudentRegister = ({ onLogin }) => {
         })
       });
 
-      console.log("📡 Response status:", response.status);
-      console.log("📡 Response headers:", Object.fromEntries(response.headers.entries()));
+      console.log("📡 Proxy response status:", response.status);
     
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ Response error text:", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        console.error("❌ Proxy response error:", errorData);
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("✅ Registration successful:", data);
+      console.log("✅ Registration successful via proxy:", data);
 
       if (data.token) {
         const { user, token } = data;
@@ -93,7 +92,7 @@ const StudentRegister = ({ onLogin }) => {
       });
       
       setErrors({ 
-        submit: `Registration failed: ${error.message}. Check browser console for details.` 
+        submit: `Registration failed: ${error.message}` 
       });
     } finally {
       setLoading(false);
@@ -110,7 +109,7 @@ const StudentRegister = ({ onLogin }) => {
           <h2 className="text-2xl font-bold text-gray-800">Student Registration</h2>
           <p className="text-gray-600 mt-2">Create your student account</p>
           <div className="mt-2 text-xs text-gray-500">
-            Using direct fetch to backend
+            Using proxy to avoid CORS
           </div>
         </div>
 
