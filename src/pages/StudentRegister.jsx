@@ -1,10 +1,7 @@
+// src/pages/StudentRegister.jsx - UPDATED
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
-const API = axios.create({ 
-  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
-});
+import API from "../config/api"; // Import centralized API
 
 const StudentRegister = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -40,6 +37,8 @@ const StudentRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
+      console.log("📝 Attempting student registration...");
+      
       const response = await API.post("/api/auth/register", {
         name: form.name,
         identifier: form.registrationNumber,
@@ -47,11 +46,11 @@ const StudentRegister = ({ onLogin }) => {
         role: "student"
       });
 
-      // ✅ FIXED: Check for token directly, not response.data.success
+      console.log("✅ Registration successful:", response.data);
+
       if (response.data.token) {
         const { user, token } = response.data;
         
-        // Call onLogin if provided, otherwise use localStorage
         if (onLogin) {
           onLogin(user, token);
         } else {
@@ -60,9 +59,17 @@ const StudentRegister = ({ onLogin }) => {
         }
         
         navigate("/student-profile");
+      } else {
+        console.warn("⚠️ No token in response");
+        setErrors({ submit: "Registration successful but no authentication token received" });
       }
     } catch (error) {
-      setErrors({ submit: error.response?.data?.message || "Registration failed" });
+      console.error("❌ Registration failed:", error);
+      setErrors({ 
+        submit: error.response?.data?.message || 
+                error.message || 
+                "Registration failed - check console for details" 
+      });
     } finally {
       setLoading(false);
     }
@@ -130,6 +137,11 @@ const StudentRegister = ({ onLogin }) => {
             {loading ? "Creating Account..." : "Register as Student"}
           </button>
         </form>
+        
+        {/* Debug info for development */}
+        <div className="mt-4 p-2 bg-gray-100 rounded text-xs text-center text-gray-600">
+          Backend: {API.defaults.baseURL}
+        </div>
       </div>
     </div>
   );
