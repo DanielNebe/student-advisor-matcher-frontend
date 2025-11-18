@@ -35,16 +35,19 @@ const StudentRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
-      console.log("🚀 Using proxy to avoid CORS...");
+      console.log("🚀 Using CORS proxy...");
       console.log("📝 Sending data:", {
         name: form.name,
         identifier: form.registrationNumber,
-        password: "***", // Don't log actual password
+        password: "***",
         role: "student"
       });
       
-      // Use the proxy route instead of direct backend call
-      const response = await fetch("/api/register", {
+      // Use CORS anywhere proxy
+      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const targetUrl = "https://student-advisor-matcher-bckend-production.up.railway.app/api/auth/register";
+      
+      const response = await fetch(proxyUrl + targetUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,16 +60,21 @@ const StudentRegister = ({ onLogin }) => {
         })
       });
 
-      console.log("📡 Proxy response status:", response.status);
+      console.log("📡 Response status:", response.status);
     
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("❌ Proxy response error:", errorData);
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        let errorText;
+        try {
+          errorText = await response.text();
+        } catch {
+          errorText = "No error details available";
+        }
+        console.error("❌ Response error:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("✅ Registration successful via proxy:", data);
+      console.log("✅ Registration successful:", data);
 
       if (data.token) {
         const { user, token } = data;
@@ -85,14 +93,14 @@ const StudentRegister = ({ onLogin }) => {
       }
     } catch (error) {
       console.error("💥 Registration failed:", error);
-      console.error("💥 Error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
+      
+      let errorMessage = error.message;
+      if (error.message.includes("Failed to fetch")) {
+        errorMessage = "Network error: Cannot connect to server. The CORS proxy might be down.";
+      }
       
       setErrors({ 
-        submit: `Registration failed: ${error.message}` 
+        submit: `Registration failed: ${errorMessage}` 
       });
     } finally {
       setLoading(false);
@@ -109,7 +117,7 @@ const StudentRegister = ({ onLogin }) => {
           <h2 className="text-2xl font-bold text-gray-800">Student Registration</h2>
           <p className="text-gray-600 mt-2">Create your student account</p>
           <div className="mt-2 text-xs text-gray-500">
-            Using proxy to avoid CORS
+            Using CORS proxy
           </div>
         </div>
 
@@ -165,6 +173,22 @@ const StudentRegister = ({ onLogin }) => {
             {loading ? "Creating Account..." : "Register as Student"}
           </button>
         </form>
+
+        <div className="mt-4 text-center">
+          <button 
+            type="button"
+            onClick={() => {
+              // Test the proxy
+              fetch("https://cors-anywhere.herokuapp.com/https://student-advisor-matcher-bckend-production.up.railway.app/health")
+                .then(r => r.json())
+                .then(d => console.log("✅ Proxy test:", d))
+                .catch(e => console.error("❌ Proxy test failed:", e));
+            }}
+            className="text-xs bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+          >
+            Test Proxy Connection
+          </button>
+        </div>
       </div>
     </div>
   );
