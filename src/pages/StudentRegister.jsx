@@ -1,7 +1,5 @@
-// src/pages/StudentRegister.jsx - UPDATED
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../config/api"; // Import centralized API
 
 const StudentRegister = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -37,19 +35,42 @@ const StudentRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
-      console.log("📝 Attempting student registration...");
-      
-      const response = await API.post("/api/auth/register", {
+      console.log("🚀 Testing with direct fetch...");
+      console.log("📝 Sending data:", {
         name: form.name,
         identifier: form.registrationNumber,
-        password: form.password,
+        password: "***", // Don't log actual password
         role: "student"
       });
+      
+    // Test with simple fetch instead of axios
+      const response = await fetch("https://student-advisor-matcher-bckend-production.up.railway.app/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          identifier: form.registrationNumber,
+          password: form.password,
+          role: "student"
+        })
+      });
 
-      console.log("✅ Registration successful:", response.data);
+      console.log("📡 Response status:", response.status);
+      console.log("📡 Response headers:", Object.fromEntries(response.headers.entries()));
+    
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Response error text:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      if (response.data.token) {
-        const { user, token } = response.data;
+      const data = await response.json();
+      console.log("✅ Registration successful:", data);
+
+      if (data.token) {
+        const { user, token } = data;
         
         if (onLogin) {
           onLogin(user, token);
@@ -60,15 +81,19 @@ const StudentRegister = ({ onLogin }) => {
         
         navigate("/student-profile");
       } else {
-        console.warn("⚠️ No token in response");
+        console.warn("⚠️ No token in response:", data);
         setErrors({ submit: "Registration successful but no authentication token received" });
       }
     } catch (error) {
-      console.error("❌ Registration failed:", error);
+      console.error("💥 Registration failed:", error);
+      console.error("💥 Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+      
       setErrors({ 
-        submit: error.response?.data?.message || 
-                error.message || 
-                "Registration failed - check console for details" 
+        submit: `Registration failed: ${error.message}. Check browser console for details.` 
       });
     } finally {
       setLoading(false);
@@ -84,11 +109,15 @@ const StudentRegister = ({ onLogin }) => {
           </div>
           <h2 className="text-2xl font-bold text-gray-800">Student Registration</h2>
           <p className="text-gray-600 mt-2">Create your student account</p>
+          <div className="mt-2 text-xs text-gray-500">
+            Using direct fetch to backend
+          </div>
         </div>
 
         {errors.submit && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {errors.submit}
+            <strong>Error:</strong> {errors.submit}
+            <div className="text-xs mt-1">Check browser console (F12) for detailed logs</div>
           </div>
         )}
 
@@ -137,11 +166,6 @@ const StudentRegister = ({ onLogin }) => {
             {loading ? "Creating Account..." : "Register as Student"}
           </button>
         </form>
-        
-        {/* Debug info for development */}
-        <div className="mt-4 p-2 bg-gray-100 rounded text-xs text-center text-gray-600">
-          Backend: {API.defaults.baseURL}
-        </div>
       </div>
     </div>
   );
