@@ -18,8 +18,8 @@ const StudentRegister = () => {
     setErrors({});
 
     try {
-      // Use the proxy route
-      const response = await fetch("/api/register", {
+      // USE YOUR RENDER BACKEND DIRECTLY
+      const response = await fetch("https://student-advisor-matcher-bckend.onrender.com/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
