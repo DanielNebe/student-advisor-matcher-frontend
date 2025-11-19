@@ -1,9 +1,9 @@
-// src/pages/MatchPage.jsx - ENHANCED DEBUG VERSION
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+// ✅ UPDATED: Use Render backend
 const API = axios.create({ 
-  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+  baseURL: "https://student-advisor-matcher-bckend.onrender.com"
 });
 
 export default function MatchPage() {
@@ -212,8 +212,6 @@ export default function MatchPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Statistics removed as requested */}
               </div>
             </div>
 
