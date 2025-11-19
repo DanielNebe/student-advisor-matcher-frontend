@@ -1,9 +1,9 @@
-// src/pages/LecturerDashboard.jsx - UPDATED
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+// ✅ UPDATED: Use Render backend
 const API = axios.create({ 
-  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+  baseURL: "https://student-advisor-matcher-bckend.onrender.com"
 });
 
 export default function LecturerDashboard() {
