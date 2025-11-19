@@ -1,5 +1,46 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API = axios.create({ 
+  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+});
+
+// Add request/response logging
+API.interceptors.request.use(
+  (config) => {
+    console.log("🚀 Making API Request:", {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      headers: config.headers
+    });
+    return config;
+  },
+  (error) => {
+    console.error("❌ Request Error:", error);
+    return Promise.reject(error);
+  }
+);
+
+API.interceptors.response.use(
+  (response) => {
+    console.log("✅ API Response:", {
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    });
+    return response;
+  },
+  (error) => {
+    console.error("❌ Response Error:", {
+      message: error.message,
+      response: error.response,
+      request: error.request
+    });
+    return Promise.reject(error);
+  }
+);
 
 const StudentRegister = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -35,80 +76,24 @@ const StudentRegister = ({ onLogin }) => {
     setErrors({});
 
     try {
-      console.log("🚀 Using CORS proxy for registration...");
-      console.log("📝 Sending data:", {
+      console.log("📝 Form data being sent:", {
         name: form.name,
         identifier: form.registrationNumber,
-        password: "***",
+        password: "***", // Don't log actual password
         role: "student"
       });
-      
-      // Use CORS proxy - try different proxy services
-      const proxyUrls = [
-        "https://cors-anywhere.herokuapp.com/",
-        "https://api.allorigins.win/raw?url=",
-        "https://corsproxy.io/?"
-      ];
-      
-      const targetUrl = "https://student-advisor-matcher-bckend-production.up.railway.app/api/auth/register";
-      
-      let response;
-      let lastError;
-      
-      // Try each proxy until one works
-      for (const proxyUrl of proxyUrls) {
-        try {
-          console.log(`🔄 Trying proxy: ${proxyUrl}`);
-          
-          const fullUrl = proxyUrl === "https://api.allorigins.win/raw?url=" 
-            ? proxyUrl + encodeURIComponent(targetUrl)
-            : proxyUrl + targetUrl;
-            
-          response = await fetch(fullUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: form.name,
-              identifier: form.registrationNumber,
-              password: form.password,
-              role: "student"
-            })
-          });
-          
-          console.log(`✅ Proxy ${proxyUrl} responded with status:`, response.status);
-          break; // Success, break out of loop
-          
-        } catch (proxyError) {
-          console.log(`❌ Proxy ${proxyUrl} failed:`, proxyError.message);
-          lastError = proxyError;
-          continue; // Try next proxy
-        }
-      }
-      
-      if (!response) {
-        throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
-      }
 
-      console.log("📡 Final response status:", response.status);
-    
-      if (!response.ok) {
-        let errorText;
-        try {
-          errorText = await response.text();
-        } catch {
-          errorText = "No error details available";
-        }
-        console.error("❌ Response error:", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await API.post("/api/auth/register", {
+        name: form.name,
+        identifier: form.registrationNumber,
+        password: form.password,
+        role: "student"
+      });
 
-      const data = await response.json();
-      console.log("✅ Registration successful:", data);
+      console.log("🎉 Registration successful:", response.data);
 
-      if (data.token) {
-        const { user, token } = data;
+      if (response.data.token) {
+        const { user, token } = response.data;
         
         if (onLogin) {
           onLogin(user, token);
@@ -119,34 +104,35 @@ const StudentRegister = ({ onLogin }) => {
         
         navigate("/student-profile");
       } else {
-        console.warn("⚠️ No token in response:", data);
-        setErrors({ submit: "Registration successful but no authentication token received" });
+        console.warn("⚠️ No token in response:", response.data);
+        setErrors({ submit: "Registration successful but no token received" });
       }
     } catch (error) {
       console.error("💥 Registration failed:", error);
       
-      let errorMessage = error.message;
-      if (error.message.includes("Failed to fetch") || error.message.includes("Network Error")) {
-        errorMessage = "Cannot connect to server. This might be a CORS issue. Please try updating your backend CORS configuration.";
+      let errorMessage = "Registration failed";
+      
+      if (error.response) {
+        // Server responded with error status
+        console.error("📡 Server error details:", {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Request made but no response received
+        console.error("📡 No response received:", error.request);
+        errorMessage = "No response from server - check network connection";
+      } else {
+        // Something else happened
+        console.error("📡 Other error:", error.message);
+        errorMessage = error.message;
       }
       
-      setErrors({ 
-        submit: `Registration failed: ${errorMessage}` 
-      });
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Test backend connection
-  const testBackendConnection = async () => {
-    console.log("🔗 Testing backend connection...");
-    try {
-      const response = await fetch("https://cors-anywhere.herokuapp.com/https://student-advisor-matcher-bckend-production.up.railway.app/health");
-      const data = await response.json();
-      console.log("✅ Backend is reachable via proxy:", data);
-    } catch (error) {
-      console.error("❌ Backend connection test failed:", error);
     }
   };
 
@@ -159,18 +145,11 @@ const StudentRegister = ({ onLogin }) => {
           </div>
           <h2 className="text-2xl font-bold text-gray-800">Student Registration</h2>
           <p className="text-gray-600 mt-2">Create your student account</p>
-          <div className="mt-2 text-xs text-gray-500">
-            Using CORS proxy service
-          </div>
         </div>
 
         {errors.submit && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <strong>Error:</strong> {errors.submit}
-            <div className="text-xs mt-1">
-              <p>This is a CORS issue. Your backend needs to be updated to allow requests from your frontend domain.</p>
-              <p>Check browser console (F12) for detailed logs</p>
-            </div>
+            {errors.submit}
           </div>
         )}
 
@@ -219,18 +198,10 @@ const StudentRegister = ({ onLogin }) => {
             {loading ? "Creating Account..." : "Register as Student"}
           </button>
         </form>
-
-        <div className="mt-4 text-center space-y-2">
-          <button 
-            type="button"
-            onClick={testBackendConnection}
-            className="text-xs bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 mr-2"
-          >
-            Test Backend Connection
-          </button>
-          <div className="text-xs text-gray-500">
-            Backend URL: student-advisor-matcher-bckend-production.up.railway.app
-          </div>
+        
+        {/* Debug info */}
+        <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
+          <p>Debug: Check browser console (F12) for detailed logs</p>
         </div>
       </div>
     </div>
