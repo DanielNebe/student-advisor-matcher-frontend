@@ -11,33 +11,24 @@ export default function MatchPage() {
   const [matchResult, setMatchResult] = useState(null);
   const [dashboard, setDashboard] = useState(null);
   const [msg, setMsg] = useState(null);
-  const [debug, setDebug] = useState("Initializing...");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    setDebug("useEffect started, token: " + (token ? "exists" : "missing"));
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
     if (!token) {
-      setDebug("No token found, cannot fetch dashboard");
       setMsg({ type: "error", text: "You must be logged in." });
       return;
     }
     
-    setDebug("Starting dashboard fetch...");
     try {
       const res = await API.get("/api/match/student/dashboard", {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDebug("Dashboard fetch successful: " + JSON.stringify(res.data).substring(0, 100));
       setDashboard(res.data);
     } catch (err) {
-      setDebug("Dashboard fetch ERROR: " + err.message);
-      if (err.response) {
-        setDebug(`Error ${err.response.status}: ${err.response.data.message}`);
-      }
       console.error("Error fetching dashboard:", err);
       setMsg({ type: "error", text: "Failed to load dashboard: " + (err.response?.data?.message || err.message) });
     }
@@ -52,36 +43,13 @@ export default function MatchPage() {
     setMsg(null);
     setMatchResult(null);
     setLoading(true);
-    setDebug("Starting match process...");
     
     try {
-      // FIRST: Get student profile to see their interests
-      const studentRes = await API.get("/api/match/student/profile", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setDebug(prev => prev + `\n\n🎓 STUDENT INTERESTS: ${JSON.stringify(studentRes.data.researchInterests)}`);
-      
-      // SECOND: Check available advisors manually
-      try {
-        const advisorsRes = await API.get("/api/match/all-advisors", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setDebug(prev => prev + `\n\n👨‍🏫 ALL ADVISORS: ${JSON.stringify(advisorsRes.data.advisors?.map(a => ({
-          name: a.name,
-          researchAreas: a.researchAreas,
-          availableSlots: a.availableSlots,
-          completedProfile: a.completedProfile
-        })))}`);
-      } catch (advisorErr) {
-        setDebug(prev => prev + `\n\n⚠️ Could not fetch advisors list: ${advisorErr.message}`);
-      }
-      
-      // THIRD: Run the actual match
+      // Run the actual match
       const res = await API.post("/api/match/find-match", {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setDebug(prev => prev + `\n\n🎯 MATCH RESULT: ${JSON.stringify(res.data)}`);
       setMatchResult(res.data);
       setMsg({ 
         type: res.data.success ? "success" : "error", 
@@ -92,10 +60,6 @@ export default function MatchPage() {
         fetchDashboardData();
       }
     } catch (err) {
-      setDebug(prev => prev + `\n\n❌ MATCH ERROR: ${err.message}`);
-      if (err.response) {
-        setDebug(prev => prev + `\n📊 ERROR DETAILS: ${JSON.stringify(err.response.data)}`);
-      }
       console.error(err);
       const errorData = err.response?.data;
       setMatchResult(errorData);
@@ -108,41 +72,13 @@ export default function MatchPage() {
     }
   };
 
-  // Add a temporary route to get all advisors
-  const checkAdvisors = async () => {
-    try {
-      setDebug("Checking all advisors...");
-      const res = await API.get("/api/match/all-advisors", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setDebug(prev => prev + `\n\n🔍 ADVISORS CHECK: ${JSON.stringify(res.data, null, 2)}`);
-    } catch (err) {
-      setDebug(prev => prev + `\n\n❌ ADVISORS CHECK FAILED: ${err.message}`);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* DEBUG INFO - Enhanced */}
-        <div className="bg-yellow-100 border border-yellow-400 p-4 rounded-lg mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-bold text-yellow-800">Debug Info:</h3>
-            <button 
-              onClick={checkAdvisors}
-              className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
-            >
-              Check Advisors
-            </button>
-          </div>
-          <pre className="text-sm text-yellow-700 whitespace-pre-wrap max-h-96 overflow-y-auto">{debug}</pre>
-        </div>
-
         {!dashboard ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-600 text-lg">Loading dashboard...</p>
-            <p className="text-gray-500 text-sm mt-2">If this takes more than a few seconds, check the debug info above</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
