@@ -1,10 +1,10 @@
-// src/pages/LecturerRegister.jsx 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+// ✅ UPDATED: Use Render backend
 const API = axios.create({ 
-  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+  baseURL: "https://student-advisor-matcher-bckend.onrender.com"
 });
 
 const LecturerRegister = ({ onLogin }) => {
