@@ -1,10 +1,10 @@
-// src/pages/StudentProfile.jsx - UPDATED
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+// ✅ UPDATED: Use Render backend
 const API = axios.create({ 
-  baseURL: "https://student-advisor-matcher-bckend-production.up.railway.app"
+  baseURL: "https://student-advisor-matcher-bckend.onrender.com"
 });
 
 export default function StudentProfile() {
