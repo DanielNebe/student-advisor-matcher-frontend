@@ -206,10 +206,10 @@ const CompleteProfile = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:5000/api/match/complete-profile",
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  "https://student-advisor-matcher-bckend.onrender.com/api/match/complete-profile",
+  formData,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
 
       if (response.data.student) {
         navigate("/match");
