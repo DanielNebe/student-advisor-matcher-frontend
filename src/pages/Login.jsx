@@ -26,8 +26,8 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      // Unified backend endpoint
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      // ✅ UPDATED: Use Render backend
+      const response = await axios.post('https://student-advisor-matcher-bckend.onrender.com/api/auth/login', {
         identifier: formData.identifier,
         password: formData.password,
         role: formData.role
