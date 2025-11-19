@@ -1,6 +1,10 @@
-// src/pages/StudentDashboard.jsx - FIXED
 import React, { useEffect, useState } from "react";
-import API from "../config/api"; // Import the centralized API
+import axios from "axios";
+
+// ✅ UPDATED: Use Render backend directly
+const API = axios.create({ 
+  baseURL: "https://student-advisor-matcher-bckend.onrender.com"
+});
 
 const StudentDashboard = ({ user }) => {
   const [studentProfile, setStudentProfile] = useState(null);
