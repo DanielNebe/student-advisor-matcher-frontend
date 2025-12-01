@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// ✅ UPDATED: Use Render backend
 const API = axios.create({ 
   baseURL: "https://student-advisor-matcher-bckend.onrender.com"
 });
@@ -30,21 +29,36 @@ export default function LecturerProfile() {
       }
       setLoading(true);
       try {
+        console.log("🔍 Loading advisor profile with token:", token.substring(0, 20) + "...");
+        
         const res = await API.post("/api/advisors/profile", {}, { 
-  headers: { Authorization: `Bearer ${token}` } 
-});
-        if (res.data) {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          } 
+        });
+        
+        console.log("🔍 Profile response:", res.data);
+        
+        if (res.data && res.data.success) {
+          const advisor = res.data.advisor;
+          console.log("🔍 Advisor data received:", advisor);
+          
           setProfile({
-            researchInterests: res.data.researchInterests || [],
-            expertiseAreas: res.data.expertiseAreas || [],
-            maxStudents: res.data.maxStudents || 5,
-            availableSlots: res.data.availableSlots || 5,
-            bio: res.data.bio || ""
+            researchInterests: advisor.researchInterests || [],
+            expertiseAreas: advisor.expertiseAreas || [],
+            maxStudents: advisor.maxStudents || 5,
+            availableSlots: advisor.availableSlots || 5,
+            bio: advisor.bio || ""
           });
-          setCompletedProfile(!!res.data.completedProfile);
+          setCompletedProfile(!!advisor.completedProfile);
+          console.log("✅ Profile loaded, completedProfile:", !!advisor.completedProfile);
+        } else {
+          console.log("⚠️ No profile data yet or success false");
         }
       } catch (err) {
-        console.error("Error loading advisor profile:", err);
+        console.error("❌ Error loading advisor profile:", err);
+        console.error("❌ Error response:", err.response?.data);
         // It's okay if profile doesn't exist yet
       } finally {
         setLoading(false);
@@ -70,7 +84,7 @@ export default function LecturerProfile() {
       return;
     }
 
-    // Validation (department requirement removed)
+    // Validation
     if (profile.researchInterests.length === 0) {
       setMsg({ type: "error", text: "Please select at least one research interest." });
       return;
@@ -84,23 +98,42 @@ export default function LecturerProfile() {
     setMsg(null);
     try {
       const payload = { 
-        ...profile,
+        researchInterests: profile.researchInterests,
+        expertiseAreas: profile.expertiseAreas,
+        maxStudents: profile.maxStudents,
+        availableSlots: profile.availableSlots,
+        bio: profile.bio,
         completedProfile: true 
       };
-     const res = await API.post("/api/advisors/complete-profile", payload, { 
-  headers: { Authorization: `Bearer ${token}` } 
-});
-      setMsg({ type: "success", text: "Profile completed successfully!" });
-      setCompletedProfile(true);
       
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate("/lecturer-dashboard");
-      }, 2000);
+      console.log("📤 Sending payload:", payload);
+      console.log("📤 Token:", token.substring(0, 20) + "...");
+      
+      const res = await API.post("/api/advisors/complete-profile", payload, { 
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        } 
+      });
+      
+      console.log("✅ Save response:", res.data);
+      
+      if (res.data.success) {
+        setMsg({ type: "success", text: "Profile completed successfully!" });
+        setCompletedProfile(true);
+        
+        // Redirect to dashboard after 2 seconds
+        setTimeout(() => {
+          navigate("/lecturer-dashboard");
+        }, 2000);
+      } else {
+        setMsg({ type: "error", text: res.data.message || "Failed to save profile." });
+      }
       
     } catch (err) {
-      console.error("Error saving profile:", err);
-      setMsg({ type: "error", text: err.response?.data?.message || "Failed to save profile." });
+      console.error("❌ Error saving profile:", err);
+      console.error("❌ Error response:", err.response?.data);
+      setMsg({ type: "error", text: err.response?.data?.message || "Failed to save profile. Please try again." });
     } finally {
       setSaving(false);
     }
@@ -128,6 +161,7 @@ export default function LecturerProfile() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
           <p className="text-gray-600">Loading your profile...</p>
         </div>
       </div>
@@ -154,10 +188,23 @@ export default function LecturerProfile() {
                 ? 'bg-green-100 text-green-800 border border-green-300' 
                 : 'bg-red-100 text-red-800 border border-red-300'
             }`}>
-              {msg.text}
-              {msg.type === 'success' && (
-                <p className="text-sm mt-1">Redirecting to dashboard...</p>
-              )}
+              <div className="flex items-start">
+                {msg.type === 'success' ? (
+                  <svg className="w-5 h-5 mr-2 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 mr-2 text-red-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                )}
+                <div>
+                  <p className="font-medium">{msg.text}</p>
+                  {msg.type === 'success' && (
+                    <p className="text-sm mt-1 text-green-700">Redirecting to dashboard...</p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -271,10 +318,18 @@ export default function LecturerProfile() {
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={saving}
-                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={saving || loading}
+                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {saving ? "Saving Profile..." : completedProfile ? "Update Profile" : "Complete Profile & Continue"}
+                {saving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving Profile...
+                  </>
+                ) : completedProfile ? "Update Profile" : "Complete Profile & Continue"}
               </button>
             </div>
           </form>
