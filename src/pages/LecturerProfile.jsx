@@ -30,7 +30,9 @@ export default function LecturerProfile() {
       }
       setLoading(true);
       try {
-        const res = await API.get("/api/advisors/me", { headers: { Authorization: `Bearer ${token}` } });
+        const res = await API.post("/api/advisors/profile", {}, { 
+  headers: { Authorization: `Bearer ${token}` } 
+});
         if (res.data) {
           setProfile({
             researchInterests: res.data.researchInterests || [],
@@ -85,9 +87,9 @@ export default function LecturerProfile() {
         ...profile,
         completedProfile: true 
       };
-      const res = await API.post("/api/advisors/profile", payload, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
+     const res = await API.post("/api/advisors/complete-profile", payload, { 
+  headers: { Authorization: `Bearer ${token}` } 
+});
       setMsg({ type: "success", text: "Profile completed successfully!" });
       setCompletedProfile(true);
       
