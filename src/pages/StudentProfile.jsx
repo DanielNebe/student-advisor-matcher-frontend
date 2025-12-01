@@ -113,7 +113,9 @@ export default function StudentProfile() {
   const RESEARCH_OPTIONS = [
     "Artificial Intelligence", "Machine Learning", "Data Science", "Software Engineering",
     "Web Development", "Mobile Development", "Cybersecurity", "Cloud Computing",
-    "Networking", "Database Systems", "Computer Vision", "Natural Language Processing"
+    "Computer Networks", "Database Systems", "Computer Vision", "Natural Language Processing",
+    "Human-Computer Interaction", "Computer Graphics", "Operating Systems", "Algorithms",
+    "Data Structures", "Computer Architecture", "Embedded Systems", "Robotics"
   ];
 
   const CAREER_OPTIONS = [
