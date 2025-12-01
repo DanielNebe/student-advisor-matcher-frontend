@@ -10,7 +10,7 @@ import StudentProfile from "./pages/StudentProfile";
 import LecturerProfile from "./pages/LecturerProfile";
 import MatchPage from "./pages/MatchPage";
 import StudentDashboard from "./pages/StudentDashboard";
-import LecturerDashboard from "./pages/LecturerDashboard"; // IMPORT THE REAL COMPONENT
+import LecturerDashboard from "./pages/LecturerDashboard"; 
 import Login from "./pages/Login";
 
 function App() {
@@ -79,20 +79,20 @@ const checkStudentProfile = async (token) => {
     console.error("Error checking advisor profile:", error);
   }
 };
-
-  const login = async (userData, token) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-    
-    // Check profile after login
-    if (userData.role === "student") {
-      await checkStudentProfile(token);
-    } else if (userData.role === "advisor") {
-      await checkAdvisorProfile(token);
-    }
-  };
-
+  
+const login = async (userData, token) => {
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(userData));
+  setUser(userData);
+  
+  // Check profile after login
+  if (userData.role === "student") {
+    await checkStudentProfile(token);
+  } else if (userData.role === "advisor") {
+    await checkAdvisorProfile(token);
+  }
+};
+  
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
