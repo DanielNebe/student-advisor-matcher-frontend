@@ -119,12 +119,14 @@ export default function StudentProfile() {
   ];
 
   const CAREER_OPTIONS = [
-    "Software Developer", "Data Scientist", "Machine Learning Engineer", "DevOps Engineer", 
-    "Cloud Architect", "Research Scientist", "Data Analyst", "Backend Developer",
-    "Frontend Developer", "Full Stack Developer", "AI Engineer", "Systems Analyst"
+    "Software Development", "Data Science", "Machine Learning Engineering", "DevOps", 
+    "Cloud Architecture", "Research & Development", "Data Analysis", "Backend Development",
+    "Frontend Development", "Full Stack Development", "AI Engineering", "Systems Analysis",
+    "Mobile App Development", "Web Development", "Database Administration", "Network Security",
+    "Computer Vision", "Natural Language Processing", "Big Data", "IoT Development"
   ];
 
-  const YEAR_LEVELS = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Postgraduate"];
+  const YEAR_LEVELS = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
