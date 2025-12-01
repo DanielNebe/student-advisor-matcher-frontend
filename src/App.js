@@ -42,36 +42,43 @@ function App() {
     setLoadingUser(false);
   }, []);
 
-  const checkStudentProfile = async (token) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/match/student/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const profileData = await response.json();
-        setStudentProfile(profileData);
-      }
-    } catch (error) {
-      console.error("Error checking student profile:", error);
+const checkStudentProfile = async (token) => {
+  try {
+    const response = await fetch("https://student-advisor-matcher-bckend.onrender.com/api/match/student/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const profileData = await response.json();
+      setStudentProfile(profileData);
     }
-  };
+  } catch (error) {
+    console.error("Error checking student profile:", error);
+  }
+};
 
-  const checkAdvisorProfile = async (token) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/advisors/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const profileData = await response.json();
-        setAdvisorProfile(profileData);
-      } else if (response.status === 404) {
-        // Advisor profile doesn't exist yet - that's okay
-        console.log("Advisor profile not created yet");
+ const checkAdvisorProfile = async (token) => {
+  try {
+    const response = await fetch("https://student-advisor-matcher-bckend.onrender.com/api/advisors/profile", {
+      method: "POST",
+      headers: { 
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
       }
-    } catch (error) {
-      console.error("Error checking advisor profile:", error);
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success) {
+        setAdvisorProfile(result.advisor);
+      }
+    } else if (response.status === 404) {
+      // Advisor profile doesn't exist yet - that's okay
+      console.log("Advisor profile not created yet");
     }
-  };
+  } catch (error) {
+    console.error("Error checking advisor profile:", error);
+  }
+};
 
   const login = async (userData, token) => {
     localStorage.setItem("token", token);
